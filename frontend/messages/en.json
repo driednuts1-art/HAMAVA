@@ -1,0 +1,642 @@
+{
+  "common": {
+    "appName": "Hamava",
+    "tagline": "Hamava — find real connection.",
+    "errorTitle": "Something went wrong",
+    "retry": "Try again",
+    "online": "Online",
+    "voiceMic": {
+      "processing": "Processing…",
+      "processingShort": "Processing",
+      "stopRecording": "Stop recording",
+      "startRecording": "Start voice recording"
+    }
+  },
+  "layout": {
+    "tabBar": {
+      "discover": "Discover",
+      "liked": "Liked",
+      "matches": "Matches",
+      "profile": "Profile",
+      "mainNavigation": "Main navigation"
+    }
+  },
+  "auth": {
+    "phone": {
+      "title": "Sign in to Hamava",
+      "subtitle": "Enter your phone number and we'll send you a verification code.",
+      "placeholder": "+15551234567",
+      "ariaLabel": "Phone number",
+      "validationError": "Enter your number with a country code (e.g. +15551234567).",
+      "rateLimited": "Too many requests for this number. Please wait a moment and try again.",
+      "sending": "Sending…",
+      "submit": "Send code"
+    },
+    "otp": {
+      "title": "Enter the code",
+      "subtitle": "Enter the 6-digit code sent to {phone}.",
+      "ariaLabel": "Verification code",
+      "wrongCodeTitle": "Incorrect code",
+      "wrongCodeDetail": "That code is incorrect or has expired. Try again.",
+      "verifying": "Verifying…",
+      "submit": "Verify",
+      "resendCooldown": "Resend in {seconds}s",
+      "resend": "Resend code"
+    },
+    "liveness": {
+      "consentTitle": "Live identity verification",
+      "consentBody": "To build trust between users, we use a live selfie to make sure a real person is behind this profile. This photo is used only for this moment and is deleted immediately — no ID document is stored. By continuing, you agree to this biometric verification.",
+      "accepting": "Submitting…",
+      "accept": "I agree, continue",
+      "verifying": "Verifying your identity…",
+      "failedTitle": "Verification failed",
+      "failedDetail": "Please try again — we need a clear, live selfie."
+    },
+    "login": {
+      "accountDeleted": "Your account has been permanently deleted."
+    }
+  },
+  "profile": {
+    "tagInput": {
+      "defaultLabel": "Interests",
+      "removeTag": "Remove {tag}",
+      "addAriaLabel": "Add an interest",
+      "add": "Add"
+    },
+    "birthDate": {
+      "label": "Date of birth",
+      "dayAriaLabel": "Day of birth (Persian calendar)",
+      "monthAriaLabel": "Month of birth (Persian calendar)",
+      "yearAriaLabel": "Year of birth (Persian calendar)",
+      "gregorianLine": "{jalali} — Gregorian: {gregorian}",
+      "aiInterpretation": "AI interpretation: {value}"
+    },
+    "photoGrid": {
+      "invalidType": "Only JPEG, PNG, or WebP files are allowed.",
+      "tooLarge": "File size exceeds the limit.",
+      "confirmDelete": "Delete this photo?",
+      "deletePhoto": "Delete photo",
+      "addPhoto": "Add photo",
+      "uploading": "Uploading…",
+      "add": "Add",
+      "uploadSuccess": "Photo added."
+    },
+    "conversationalSetup": {
+      "continueManually": "Continue with the manual form",
+      "almostDone": "Got it all! Just a photo left.",
+      "addPhoto": "Add photo",
+      "messageAriaLabel": "Message",
+      "voiceHint": "Tell us about yourself",
+      "send": "Send"
+    },
+    "promptPicker": {
+      "label": "Personal prompts ({count}/{max}) — at least 2 required",
+      "removeQuestion": "Remove this prompt",
+      "answer": "Answer",
+      "addNewQuestion": "Add a new prompt",
+      "choosePrompt": "Choose a prompt",
+      "addQuestion": "Add prompt"
+    },
+    "proposalCard": {
+      "fields": {
+        "displayName": "Name",
+        "city": "City",
+        "bio": "About me",
+        "interests": "Interests",
+        "birthDate": "Date of birth"
+      },
+      "suggestionFor": "Suggestion for \"{field}\" — editable",
+      "submitting": "Submitting…",
+      "confirmEdited": "Confirm edited value",
+      "confirm": "Confirm"
+    },
+    "form": {
+      "genderOptions": {
+        "MALE": "Man",
+        "FEMALE": "Woman",
+        "OTHER": "Other"
+      },
+      "intentOptions": {
+        "SERIOUS": "Serious relationship",
+        "CASUAL": "Casual / dating",
+        "MARRIAGE_TRACK": "Marriage-focused",
+        "FRIENDSHIP": "Friendship only",
+        "NOT_SURE": "Not sure yet"
+      },
+      "name": "Name",
+      "currentCity": "Current city",
+      "aboutMe": "About me",
+      "gender": "Gender",
+      "datingGoal": "Dating goal",
+      "choose": "Choose",
+      "saving": "Saving…",
+      "save": "Save"
+    },
+    "aboutMe": {
+      "heading": "About me",
+      "height": "Height",
+      "heightPlaceholder": "Height (cm)",
+      "notSet": "Not set",
+      "education": "Education",
+      "exercise": "Exercise",
+      "kids": "Kids",
+      "zodiac": "Zodiac sign",
+      "politicalView": "Political view",
+      "drinking": "Drinking",
+      "smoking": "Smoking",
+      "hometown": "Hometown",
+      "languages": "Languages",
+      "hideDrinkingSmoking": "Hide drinking/smoking on my profile",
+      "hideDrinkingSmokingAriaLabel": "Hide drinking and smoking from my profile",
+      "options": {
+        "education": {
+          "HIGH_SCHOOL": "High school",
+          "BACHELORS": "Bachelor's",
+          "MASTERS": "Master's",
+          "DOCTORATE": "Doctorate",
+          "TRADE_SCHOOL": "Trade school",
+          "OTHER": "Other"
+        },
+        "exercise": {
+          "NEVER": "Never",
+          "SOMETIMES": "Sometimes",
+          "REGULARLY": "Regularly",
+          "DAILY": "Every day"
+        },
+        "kids": {
+          "HAVE_KIDS": "Have kids",
+          "HAVE_AND_WANT_MORE": "Have kids, want more",
+          "WANT_KIDS": "Want kids",
+          "DONT_WANT_KIDS": "Don't want kids",
+          "NOT_SURE": "Not sure"
+        },
+        "zodiac": {
+          "ARIES": "Aries",
+          "TAURUS": "Taurus",
+          "GEMINI": "Gemini",
+          "CANCER": "Cancer",
+          "LEO": "Leo",
+          "VIRGO": "Virgo",
+          "LIBRA": "Libra",
+          "SCORPIO": "Scorpio",
+          "SAGITTARIUS": "Sagittarius",
+          "CAPRICORN": "Capricorn",
+          "AQUARIUS": "Aquarius",
+          "PISCES": "Pisces"
+        },
+        "political": {
+          "NOT_INTERESTED": "Not political",
+          "INTERESTED": "Interested in politics",
+          "PREFER_NOT_TO_SAY": "Prefer not to say"
+        },
+        "drinking": {
+          "NEVER": "Never",
+          "SOMETIMES": "Sometimes",
+          "REGULARLY": "Regularly"
+        },
+        "smoking": {
+          "NEVER": "Never",
+          "SOMETIMES": "Sometimes",
+          "REGULARLY": "Regularly"
+        }
+      }
+    },
+    "page": {
+      "myProfile": "My Profile",
+      "editProfile": "Edit Profile",
+      "letsBuildProfile": "Let's build your profile",
+      "chooseOneOfTwo": "Choose one of these two ways.",
+      "chatWithAi": "Chat with AI",
+      "manualForm": "Manual form"
+    }
+  },
+  "discovery": {
+    "boostBanner": {
+      "active": "Smart Boost is active",
+      "minutesLeft": "{minutes} minutes left",
+      "activating": "Activating…",
+      "activate": "Activate Boost"
+    },
+    "whoLikedMe": {
+      "emptyTitle": "No one has liked you yet",
+      "emptyDetail": "Complete your profile and stay active in Discovery to be seen more.",
+      "pass": "Pass",
+      "superLike": "Super Like",
+      "likeBack": "Like back",
+      "loading": "Loading…",
+      "showMore": "Show more"
+    },
+    "swipeDeck": {
+      "emptyTitle": "No one left for now",
+      "emptyDetail": "Try changing your filters or use AI Search instead.",
+      "pass": "Pass",
+      "superLike": "Super Like",
+      "like": "Like"
+    },
+    "matchConfirmation": {
+      "ariaLabel": "You matched",
+      "title": "It's a match!",
+      "body": "You have a new match. See the full details and \"Why You Two?\" on the matches screen.",
+      "ok": "OK"
+    },
+    "filtersPanel": {
+      "title": "Filters",
+      "close": "Close",
+      "invalidAgeRange": "Invalid age range.",
+      "ageRange": "Age range: {min} to {max}",
+      "minAge": "Minimum age",
+      "maxAge": "Maximum age",
+      "showMeLabel": "Show me",
+      "relationshipGoalLabel": "Relationship goal",
+      "verifiedOnly": "Verified profiles only",
+      "activeThisWeekOnly": "Active this week only",
+      "newMembersOnly": "New members only",
+      "saving": "Saving…",
+      "apply": "Apply filters"
+    },
+    "candidateCard": {
+      "noPhoto": "No photo",
+      "previousPhoto": "Previous photo",
+      "nextPhoto": "Next photo",
+      "noName": "No name",
+      "newBadge": "New",
+      "superLikedYou": "Super Liked you",
+      "likedYou": "Liked you",
+      "livesIn": "Lives in {city}",
+      "fromHometown": "From {hometown}",
+      "heightCm": "{height} cm",
+      "exercisePrefix": "Exercise: {value}",
+      "drinkingPrefix": "Drinking: {value}",
+      "smokingPrefix": "Smoking: {value}"
+    },
+    "aiSearch": {
+      "unavailableTitle": "AI Search is unavailable",
+      "unavailableDetail": "This feature is temporarily unavailable — please try again later.",
+      "backToDeck": "Go to regular swiping",
+      "transcribed": "Transcribed: {text}",
+      "detectedFilters": "Detected filters — editable",
+      "searchDescriptionAriaLabel": "Search description",
+      "city": "City",
+      "minAge": "Minimum age",
+      "maxAge": "Maximum age",
+      "rateLimited": "Too many requests. Please wait a moment and try again.",
+      "searching": "Searching…",
+      "search": "Search",
+      "noResultsTitle": "No results found",
+      "noResultsDetail": "Try changing your filters or search again.",
+      "inputAriaLabel": "AI Search",
+      "inputPlaceholder": "e.g. someone serious, who loves books, nearby…",
+      "voiceHint": "Say who you're looking for",
+      "checking": "Checking…",
+      "findWithAi": "Find with AI"
+    },
+    "page": {
+      "aiSearchTab": "AI Search"
+    }
+  },
+  "settings": {
+    "subHeader": {
+      "backToSettings": "Back to Settings"
+    },
+    "logout": {
+      "logOut": "Log out",
+      "confirmBody": "You'll be logged out. You can sign back in anytime.",
+      "loggingOut": "Logging out…",
+      "confirmLogOut": "Yes, log out",
+      "cancel": "Cancel"
+    },
+    "legalLinks": {
+      "heading": "Legal & Privacy",
+      "privacyPolicy": "Privacy Policy",
+      "termsOfService": "Terms of Service"
+    },
+    "comingSoon": {
+      "body": "The official text of this document isn't ready yet. It will be available here as soon as it is.",
+      "backToSettings": "Back to Settings"
+    },
+    "supportSafety": {
+      "heading": "Support & Safety",
+      "helpCenter": "Help Center",
+      "safety": "Safety"
+    },
+    "notifications": {
+      "heading": "Notifications",
+      "subtitle": "These preferences are saved only — no notification is actually sent yet.",
+      "saveFailed": "Couldn't save. Please try again.",
+      "toggles": {
+        "notifyOnNewMatch": "New match",
+        "notifyOnNewMessage": "New message",
+        "notifyOnSafetyAlert": "Safety alerts"
+      }
+    },
+    "faq": {
+      "entries": {
+        "aiSearch": {
+          "question": "How does AI Search work?",
+          "answer": "Just describe who you're looking for, by text or voice — for example, \"someone serious, who loves books, nearby.\" The AI suggests real filters (age, city, relationship goal, and more) from your description, which you can edit yourself before searching."
+        },
+        "verified": {
+          "question": "What does the verified badge mean?",
+          "answer": "It means that user has confirmed their identity once with a live camera check. Some messaging settings only allow messages from verified users — you can change this in your own settings."
+        },
+        "harassment": {
+          "question": "What do I do if someone is harassing me?",
+          "answer": "In any conversation, use the shield icon at the top of the screen to report or block that user immediately. Blocking takes effect right away, and that conversation will no longer appear in your matches."
+        },
+        "deleteAccount": {
+          "question": "Is account deletion reversible?",
+          "answer": "No. Deleting your account from Settings permanently and immediately erases your profile, photos, messages, matches, and sessions. Before final deletion, you'll need to re-verify your phone number with a code — this is a deliberate step, not a simple confirmation."
+        },
+        "support": {
+          "question": "How can I contact support?",
+          "answer": "There's no direct in-app support channel yet — this is coming soon. Until then, use the \"Report\" option inside a conversation for any safety concerns."
+        }
+      }
+    },
+    "privacy": {
+      "heading": "Privacy",
+      "saveFailed": "Couldn't save. Please try again.",
+      "preciseLocation": "Precise location",
+      "preciseLocationDetail": "Show a more precise location instead of just your city",
+      "whoCanMessage": "Who can message you?",
+      "verifiedOnly": "Verified users only",
+      "everyone": "Everyone",
+      "shareLinkVisibility": "Show up in date-share links",
+      "shareLinkVisibilityDetail": "Allow your photo and name to be shown in other people's date-share links",
+      "presenceVisibility": "Show online/last-active status",
+      "presenceVisibilityDetail": "If you turn this off, you also won't be able to see others' status"
+    },
+    "deleteAccount": {
+      "deleteAccount": "Delete account",
+      "phoneValidationError": "Enter your number with a country code (e.g. +15551234567).",
+      "warningTitle": "This action is irreversible and immediate.",
+      "warningBody": "Your profile, photos, messages, matches, and sessions will be permanently deleted. There is no recovery period.",
+      "understandContinue": "I understand, continue",
+      "cancel": "Cancel",
+      "reenterPhone": "For final confirmation, re-enter the phone number you signed up with.",
+      "phonePlaceholder": "+15551234567",
+      "phoneAriaLabel": "Phone number to confirm account deletion",
+      "rateLimited": "Too many requests for this number. Please wait a moment and try again.",
+      "sending": "Sending…",
+      "sendCode": "Send code",
+      "codeBody": "Enter the 6-digit code sent to {phone}. Confirming this code permanently deletes your account.",
+      "codeAriaLabel": "Account deletion confirmation code",
+      "wrongCode": "That code is incorrect or has expired. Try again.",
+      "deleting": "Deleting…",
+      "permanentlyDelete": "Permanently delete account"
+    },
+    "page": {
+      "title": "Settings",
+      "account": "Account"
+    },
+    "termsPage": {
+      "title": "Terms of Service"
+    },
+    "privacyPolicyPage": {
+      "title": "Privacy Policy"
+    },
+    "safety": {
+      "pageTitle": "Safety",
+      "tips": {
+        "publicPlace": {
+          "title": "Meet your first date in a public place",
+          "detail": "A busy cafe or restaurant, not somewhere private or secluded, is always the best choice."
+        },
+        "shareDetails": {
+          "title": "Share the date's details with someone you trust beforehand",
+          "detail": "In any conversation, use the share icon at the top of the screen to create a real link with the date's time and place, and send it to a friend or family member — without the other person knowing."
+        },
+        "videoCallFirst": {
+          "title": "Have a video call before meeting in person",
+          "detail": "Seeing and hearing the other person for real, before meeting in person, is one of the simplest ways to build confidence."
+        },
+        "trustYourGut": {
+          "title": "Trust your instincts",
+          "detail": "If something doesn't feel right, you don't need a reason — you can leave the conversation or cancel the date."
+        },
+        "reportBlock": {
+          "title": "Reporting or blocking is always available",
+          "detail": "In any conversation, use the shield icon at the top of the screen to report or block that user immediately."
+        }
+      },
+      "noBlockListTitle": "You currently can't view or manage your blocked-users list from Settings",
+      "noBlockListDetail": "This is a real, known limitation we've documented — not something that's just hard to find."
+    }
+  },
+  "chat": {
+    "safetySheet": {
+      "title": "Safety",
+      "close": "Close",
+      "reportUser": "Report this user",
+      "block": "Block",
+      "blockWarning": "After blocking, this conversation will no longer appear in your matches. This action cannot be undone.",
+      "confirmBlock": "Yes, block",
+      "cancel": "Cancel",
+      "categories": {
+        "SPAM": "Spam",
+        "FAKE_PROFILE": "Fake profile",
+        "HARASSMENT": "Harassment",
+        "SCAM_OR_FINANCIAL": "Financial scam",
+        "OTHER": "Other reason"
+      },
+      "explanation": "Explanation",
+      "explanationPlaceholder": "Explain...",
+      "submitReport": "Submit report"
+    },
+    "messageBubble": {
+      "failedToSend": "Failed to send",
+      "retry": "Retry"
+    },
+    "composeBar": {
+      "placeholder": "Type your message..."
+    },
+    "conversationView": {
+      "unavailable": "This conversation isn't available",
+      "backToMatches": "Back to matches list",
+      "back": "Back",
+      "noName": "No name",
+      "connecting": "Connecting...",
+      "disconnected": "Disconnected",
+      "voiceCall": "Voice call",
+      "videoCall": "Video call",
+      "shareDate": "Share date",
+      "sendFirstMessage": "Send the first message to {name}",
+      "them": "them"
+    }
+  },
+  "calls": {
+    "controls": {
+      "mute": "Mute microphone",
+      "unmute": "Unmute microphone",
+      "cameraOff": "Turn off camera",
+      "cameraOn": "Turn on camera",
+      "hangup": "Hang up"
+    },
+    "incoming": {
+      "ariaLabel": "Incoming call",
+      "incomingVideoCall": "Incoming video call...",
+      "incomingVoiceCall": "Incoming voice call...",
+      "decline": "Decline",
+      "answerCall": "Answer call",
+      "answer": "Answer"
+    },
+    "inCall": {
+      "ariaLabel": "Call",
+      "ringing": "Calling...",
+      "connecting": "Connecting...",
+      "callEnded": "Call ended",
+      "permissionDenied": "Microphone or camera access was denied.",
+      "connectionFailed": "The call connection failed.",
+      "declined": "Call declined.",
+      "missed": "No answer."
+    }
+  },
+  "matches": {
+    "detailPage": {
+      "unavailable": "This match isn't available"
+    },
+    "list": {
+      "emptyTitle": "No matches yet",
+      "emptyDetail": "Go to Discover and start liking people.",
+      "newMatches": "New matches",
+      "messages": "Messages"
+    },
+    "feedback": {
+      "recorded": "Feedback recorded: {rating}",
+      "prompt": "How was this match?",
+      "ratings": {
+        "VERY_RELEVANT": "Really good",
+        "RELEVANT": "Good",
+        "NEUTRAL": "Neutral",
+        "NOT_RELEVANT": "Not very relevant",
+        "WRONG_MATCH": "Not relevant at all"
+      }
+    },
+    "moment": {
+      "ariaLabel": "You matched",
+      "tapToContinue": "Tap to continue"
+    }
+  },
+  "onboarding": {
+    "welcomeTour": {
+      "ariaLabel": "Welcome tour",
+      "dismiss": "Dismiss",
+      "letsGo": "Let's go!",
+      "next": "Next",
+      "slides": {
+        "welcome": {
+          "title": "Welcome to Hamava!",
+          "detail": "Every verified profile in this app is a real person."
+        },
+        "aiSearch": {
+          "title": "AI Search",
+          "detail": "Describe who you're looking for, by text or voice, and AI finds them for you."
+        },
+        "safeConnection": {
+          "title": "Safe Connection",
+          "detail": "Before exchanging phone numbers, make a secure voice call, and share your date's details with someone you trust."
+        },
+        "superLikeBoost": {
+          "title": "Super Like & Boost",
+          "detail": "Stand out and get noticed faster."
+        }
+      }
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Every profile, a real person",
+      "subtitle": "Hamava is a dating app where every profile is backed by a live identity check, and AI actually understands who you're looking for."
+    },
+    "getStarted": "Get started",
+    "benefits": {
+      "liveVerification": {
+        "title": "Live identity verification",
+        "detail": "Before you meet anyone, be sure they really are who they say they are."
+      },
+      "aiSearch": {
+        "title": "AI Search",
+        "detail": "Describe who you're looking for, by text or voice, and AI finds them for you."
+      },
+      "safeVoiceCall": {
+        "title": "Safe voice calls",
+        "detail": "Hear each other's real voice from inside the app before exchanging phone numbers."
+      },
+      "dateShare": {
+        "title": "Date sharing",
+        "detail": "Share your date's details with someone you trust, and go out with more peace of mind."
+      }
+    },
+    "trust": {
+      "title": "Safety, first",
+      "detail": "No one gets into this app without passing a live identity check. By default, only verified users can message you, calls never reveal your real phone number, and reporting or blocking is always available."
+    },
+    "howItWorks": {
+      "title": "How it works"
+    },
+    "steps": {
+      "signUp": {
+        "title": "Sign up",
+        "detail": "Join in seconds with your phone number."
+      },
+      "verify": {
+        "title": "Verify your identity",
+        "detail": "Confirm your account is real with a simple live check."
+      },
+      "discover": {
+        "title": "Discover & search",
+        "detail": "Find the right person with swipe cards or AI Search."
+      },
+      "connect": {
+        "title": "Connect safely",
+        "detail": "Chat, call, and get to know someone with peace of mind."
+      }
+    },
+    "footerCopyright": "© Hamava",
+    "contactUs": "Contact us"
+  },
+  "dateShare": {
+    "sheet": {
+      "title": "Share your date",
+      "close": "Close",
+      "newLink": "New link",
+      "previousLinks": "Previous links",
+      "location": "Date location",
+      "locationPlaceholder": "e.g. Café X, Main Street",
+      "createLink": "Create link",
+      "createdBody": "Send this link to someone you trust. This is the only time this link is shown — afterward you can only view or revoke it, not copy it again.",
+      "validUntil": "Valid until {datetime}",
+      "share": "Share",
+      "linkCopied": "Link copied",
+      "copyLink": "Copy link",
+      "viewPreviousLinks": "View previous links",
+      "loading": "Loading...",
+      "noLinksYet": "You haven't created any links for this match yet.",
+      "statusActive": "Active",
+      "statusExpired": "Expired",
+      "statusRevoked": "Revoked",
+      "reshareHint": "To share again, create a new link.",
+      "revokeLink": "Revoke link",
+      "areYouSure": "Are you sure?",
+      "confirmRevoke": "Yes, revoke",
+      "cancel": "Cancel"
+    },
+    "dateTimeField": {
+      "label": "Date time",
+      "dayAriaLabel": "Date day (Persian calendar)",
+      "monthAriaLabel": "Date month (Persian calendar)",
+      "yearAriaLabel": "Date year (Persian calendar)",
+      "hourAriaLabel": "Date hour",
+      "minuteAriaLabel": "Date minute",
+      "gregorianLine": "{jalali} — Gregorian: {gregorian}"
+    },
+    "publicView": {
+      "tooManyAttemptsTitle": "Too many attempts",
+      "tooManyAttemptsDetail": "Please try again later.",
+      "linkNoLongerValid": "This link is no longer valid",
+      "noName": "No name",
+      "verifiedHamavaUser": "Verified Hamava user",
+      "sharedThisDate": "{name} shared this date with you:"
+    }
+  }
+}

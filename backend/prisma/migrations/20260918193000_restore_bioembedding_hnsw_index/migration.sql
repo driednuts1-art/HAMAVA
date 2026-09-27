@@ -1,0 +1,25 @@
+-- Real bug found 2026-09-18 (user-directed empirical investigation of why
+-- ai-search.service.ts's ranking query never uses the HNSW index): the
+-- index was NOT a planner choice on a small dev table — it did not exist
+-- at all. Root cause traced via migration history: migration
+-- 20260903134429_feature_24_profile_depth_who_liked_me let Prisma's
+-- auto-generated `DROP INDEX "users_bioEmbedding_hnsw_idx"` through
+-- (every other migration since 20260820115133_add_ai_search explicitly
+-- strips this same auto-generated drop with a NOTE comment, e.g.
+-- 20260820192411_add_super_like_boost_why_you_two — this one migration
+-- missed that step), and no migration since recreated it. Confirmed via
+-- `SELECT indexname FROM pg_indexes WHERE tablename = 'users'` against the
+-- live dev DB: zero HNSW indexes present before this migration.
+--
+-- Recreates the exact original definition from
+-- 20260820115133_add_ai_search/migration.sql. Plain (non-CONCURRENTLY)
+-- CREATE INDEX matches that original migration's own precedent and is fine
+-- at current dev table size; a production rollout at real scale should use
+-- CREATE INDEX CONCURRENTLY instead to avoid locking writes on `users`.
+--
+-- NOTE for whoever runs `prisma migrate dev` next: Prisma's diff engine
+-- still cannot see this hand-written raw-SQL index (Unsupported vector
+-- type). It WILL propose dropping it again on the next schema change.
+-- Strip that proposed DROP from the generated migration, same as every
+-- migration between 20260820115133 and 20260823180000 already does.
+CREATE INDEX "users_bioEmbedding_hnsw_idx" ON "users" USING hnsw ("bioEmbedding" vector_cosine_ops);

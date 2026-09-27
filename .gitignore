@@ -1,0 +1,31 @@
+# Root .gitignore — added as a required pre-step before this project's first
+# `git init` (docs/production-deployment-plan.md §0.2). Two specific loose
+# files at the project root look like real, unreviewed credentials and must
+# never be tracked, plus general env/secret patterns as a second guard on top
+# of backend/.gitignore and frontend/.gitignore (which already cover their
+# own .env files independently).
+
+# Named, real files flagged during the deployment-plan audit — not opened by
+# Claude Code, excluded here by exact name out of caution. Review these
+# yourself before deciding whether they belong in this project directory.
+/کدها و اطلاعات حساس.txt
+/TURN .txt
+
+# Env files, at any depth — but not the *.env.example templates (no real
+# secrets, just placeholders, and genuinely useful to have committed so a
+# real deploy knows every variable name it needs to fill in).
+.env
+.env.*
+*.env
+!.env.example
+!*.env.example
+
+# Common credential/key file shapes.
+*.pem
+*.key
+*.p12
+*.pfx
+*credentials*.json
+*service-account*.json
+id_rsa
+id_rsa.*

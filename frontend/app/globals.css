@@ -1,0 +1,263 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * docs/design-system-v2.md — English/LTR/global palette, replacing
+ * docs/design-system.md's Persian-rooted dark system. Mapped into shadcn's
+ * expected variable names so generated components (Button, Dialog, ...) pick
+ * up the brand automatically, plus exposed under their own semantic names
+ * for hand-built components.
+ *
+ * Backward-compat note (Phase 2 foundation is deliberately scoped to NOT
+ * touch individual components — docs/i18n-rtl-migration-scope.md): every
+ * component still referencing the old bg-turquoise/text-gold/border-rose/
+ * shadow-elevation-cta-turquoise etc. utility classes keeps compiling and
+ * rendering, now with v2's colors, via the aliases below. --rose is aliased
+ * to --violet (v1's own rose was already used for the "super-like/boost"
+ * register, which v2's violet names explicitly — see design-system-v2.md
+ * §2.2), NOT to the new --danger token. This means any component using rose
+ * for a genuinely destructive action (delete-account, block/report
+ * confirmations) will render violet, not red, until Phase 3 audits those
+ * specific call sites and switches them to --danger directly — a known,
+ * flagged gap, not an oversight.
+ */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-inter);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* v2's real, current tokens (docs/design-system-v2.md §2.2) — usable
+     directly as Tailwind utilities: bg-coral, text-violet, border-amber, etc. */
+  --color-coral: var(--coral);
+  --color-coral-dim: var(--coral-dim);
+  --color-violet: var(--violet);
+  --color-violet-dim: var(--violet-dim);
+  --color-amber: var(--amber);
+  --color-danger: var(--danger);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-faint: var(--ink-faint);
+
+  /* Legacy aliases only — see the block comment above. Migrate a component
+     off these and onto the real v2 names above as it's touched in Phase 3. */
+  --color-turquoise: var(--coral);
+  --color-turquoise-dim: var(--coral-dim);
+  --color-gold: var(--amber);
+  --color-gold-dim: var(--amber-dim);
+  --color-rose: var(--violet);
+  --color-bg-deep: var(--bg-deep);
+  --color-text-muted: var(--ink-muted);
+  --color-text-faint: var(--ink-faint);
+
+  --radius-sm: var(--radius-sm-value);
+  --radius-md: var(--radius-md-value);
+  --radius-lg: var(--radius-lg-value);
+  --radius-xl: var(--radius-lg-value);
+
+  /* docs/design-system-v2.md §4 — real v2 names, plus legacy aliases (same
+     rationale as the color block above) so shadow-elevation-cta-turquoise/
+     -rose/-gold usages keep resolving. */
+  --shadow-elevation-1: var(--elevation-1);
+  --shadow-elevation-2: var(--elevation-2);
+  --shadow-elevation-3: var(--elevation-3);
+  --shadow-elevation-cta-coral: var(--elevation-cta-coral);
+  --shadow-elevation-cta-violet: var(--elevation-cta-violet);
+  --shadow-elevation-cta-amber: var(--elevation-cta-amber);
+  /* 2026-09-22: a real, dedicated CTA glow for genuinely destructive actions
+     (delete account, confirm block, revoke a share link) — not part of the
+     rose→violet legacy alias, added specifically so those buttons stop
+     borrowing the "super-like" glow. */
+  --shadow-elevation-cta-danger: var(--elevation-cta-danger);
+  --shadow-elevation-cta-turquoise: var(--elevation-cta-coral);
+  --shadow-elevation-cta-rose: var(--elevation-cta-violet);
+  --shadow-elevation-cta-gold: var(--elevation-cta-amber);
+}
+
+:root {
+  /* ---- docs/design-system-v2.md §2.2 base tokens (verbatim) ---- */
+  --bg: #fffaf7;
+  --panel: #ffffff;
+  --surface: #fff1ea;
+  --ink: #1a1420;
+  --ink-muted: #6b6070;
+  --ink-faint: #a89aa8;
+  --coral: #ff5864;
+  --coral-dim: rgba(255, 88, 100, 0.12);
+  --violet: #7c5cff;
+  --violet-dim: rgba(124, 92, 255, 0.12);
+  --amber: #ffb648;
+  --amber-dim: rgba(255, 182, 72, 0.18);
+  --danger: #d92d20;
+  --border: rgba(26, 20, 32, 0.08);
+  --radius-lg-value: 28px;
+  --radius-md-value: 18px;
+  --radius-sm-value: 12px;
+
+  /* Legacy name, real new value — v1's "deepest layer" role (overlay scrims,
+     brand-mark core) still needs a real dark tone even on a light-mode
+     palette; not part of design-system-v2.md's own token table (§2.2), so
+     kept close to --ink rather than invented from nothing. Referenced by 11
+     existing components (overlay backdrops, brand-mark) — see
+     docs/i18n-rtl-migration-scope.md for the full component list. */
+  --bg-deep: #140f1a;
+
+  /* Real, raw legacy CSS custom-property aliases — NOT just the @theme-level
+     aliases above. 47 of ~50 existing hand-built components reference these
+     old names directly via Tailwind arbitrary-value syntax (e.g.
+     `text-[var(--turquoise)]`, `bg-[var(--text-muted)]`), which reads the
+     literal CSS custom property, not the generated `bg-turquoise` utility
+     class — the @theme block's aliasing alone does NOT cover this usage
+     pattern, since that only teaches Tailwind's utility generator about
+     `--color-turquoise`, it doesn't define `--turquoise` itself as a real,
+     inheritable CSS variable. Without this block, the overwhelming majority
+     of this app's own components would silently resolve to `unset` (no
+     color at all) the moment v1's raw --turquoise/--rose/--text/etc.
+     variables stopped existing — found and fixed before it shipped, not
+     after. Same --rose→--violet mapping choice as the @theme block, same
+     caveat about destructive-action usages (see that block's comment). */
+  --turquoise: var(--coral);
+  --turquoise-dim: var(--coral-dim);
+  --gold: var(--amber);
+  --gold-dim: var(--amber-dim);
+  --rose: var(--violet);
+  --text: var(--ink);
+  --text-muted: var(--ink-muted);
+  --text-faint: var(--ink-faint);
+  /* v1's secondary nested surface, one file (welcome-tour.tsx) — not in v2's
+     own token table either; a slightly deeper warm tint than --surface. */
+  --surface-2: #ffe4d6;
+
+  /* docs/design-system-v2.md §4 — light-mode elevation (soft warm shadow +
+     a crisp saturated ring on CTAs), replacing v1's glow-on-dark mechanic
+     fresh rather than adapting it (see §2.1/§4's own reasoning: glow reads
+     as elevation on a near-black surface, not on a light one). Proposed
+     values, not yet put through the same real-rendered-preview verification
+     v1's own §1.3 used before being finalized — flagged in the migration
+     report, not silently presented as pre-verified. */
+  --elevation-1: 0 1px 2px rgba(26, 20, 32, 0.04), 0 4px 12px rgba(26, 20, 32, 0.06);
+  --elevation-2: 0 2px 4px rgba(26, 20, 32, 0.06), 0 12px 32px rgba(26, 20, 32, 0.12);
+  --elevation-3: 0 8px 16px rgba(26, 20, 32, 0.08), 0 24px 60px rgba(26, 20, 32, 0.18);
+  --elevation-cta-coral: 0 0 0 1.5px rgba(255, 88, 100, 0.9), 0 8px 24px rgba(255, 88, 100, 0.35);
+  --elevation-cta-violet: 0 0 0 1.5px rgba(124, 92, 255, 0.9), 0 8px 24px rgba(124, 92, 255, 0.35);
+  --elevation-cta-amber: 0 0 0 1.5px rgba(255, 182, 72, 0.9), 0 8px 24px rgba(255, 182, 72, 0.35);
+  --elevation-cta-danger: 0 0 0 1.5px rgba(217, 45, 32, 0.9), 0 8px 24px rgba(217, 45, 32, 0.35);
+
+  /* docs/design-system-v2.md §2.3 — reserved-use signature gradient. Linear
+     only — v2 doesn't specify a conic variant the way v1 did, not omitted
+     by accident. v1 kept a separate --signature-gradient-linear specifically
+     because its main gradient was conic (unsafe for background-clip:text);
+     v2's main gradient already is linear, so --signature-gradient-linear is
+     kept only as an alias for match-moment.tsx's existing text-fill usage,
+     not a second real asset. */
+  --signature-gradient: linear-gradient(135deg, var(--coral), var(--amber), var(--violet));
+  --signature-gradient-linear: var(--signature-gradient);
+
+  /* ---- shadcn semantic mapping ---- */
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card: var(--panel);
+  --card-foreground: var(--ink);
+  --popover: var(--panel);
+  --popover-foreground: var(--ink);
+  --primary: var(--coral);
+  --primary-foreground: #ffffff;
+  --secondary: var(--surface);
+  --secondary-foreground: var(--ink);
+  --muted: var(--surface);
+  --muted-foreground: var(--ink-muted);
+  --accent: var(--amber);
+  --accent-foreground: #2c1d05;
+  /* Real fix, not an alias: v1 never had a dedicated danger color (v1 §8
+     Open Items #1) and overloaded --rose for both warmth and destructive.
+     shadcn's own --destructive token is exactly the one place that
+     ambiguity is now resolved correctly by construction — it was never
+     "rose the brand color" doing double duty here, it's --danger. */
+  --destructive: var(--danger);
+  --border: var(--border);
+  --input: var(--border);
+  --ring: var(--coral);
+  --sidebar: var(--panel);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--coral);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--surface);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--coral);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* docs/design-system-v2.md §5: the girih hexagon motif (v1 §3.2/§4.4) is
+   deliberately dropped, not reskinned — it's a specific, real piece of
+   Persian/Islamic geometric art tradition, not a generic pattern that
+   could be recolored. `.girih-background` and its render site in
+   app/layout.tsx are removed. v2 doesn't specify a replacement ambient
+   background asset (its own §5 only covers icons/empty-state illustration
+   material) — the page background is the plain --bg color for now; a new
+   ambient texture, if wanted, is a real, separate design decision, not
+   assumed here. */
+
+/* Feature 22 FR-321/326: a live "recording" indicator on the shared
+   VoiceMicButton — an expanding ring pulse, not a static color swap.
+   prefers-reduced-motion: reduce gets a static ring instead of motion.
+   Color updated to --violet's rgb equivalent (124,92,255) — was v1's --rose
+   (232,140,160); this animation used the "super-like/boost" register's
+   hardcoded value directly rather than a var(), so the token-alias approach
+   elsewhere in this file couldn't cover it automatically. */
+@keyframes mic-recording-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(124, 92, 255, 0.55);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(124, 92, 255, 0);
+  }
+}
+
+.mic-recording-pulse {
+  animation: mic-recording-ring 1.4s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mic-recording-pulse {
+    animation: none;
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.35);
+  }
+}

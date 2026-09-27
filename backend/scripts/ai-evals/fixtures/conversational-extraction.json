@@ -1,0 +1,50 @@
+[
+  {
+    "remainingFields": ["displayName", "birthDate", "city", "bio", "interests"],
+    "latestUserMessage": "اسمم سارا هست",
+    "expectedField": "displayName",
+    "expectedStringValue": "سارا"
+  },
+  {
+    "remainingFields": ["birthDate", "city", "bio", "interests"],
+    "latestUserMessage": "من تو تهران زندگی می‌کنم",
+    "expectedField": "city",
+    "expectedStringValue": "تهران"
+  },
+  {
+    "remainingFields": ["birthDate", "bio", "interests"],
+    "latestUserMessage": "متولد ۱۳۷۰ هستم، پنجم مرداد",
+    "expectedField": "birthDate",
+    "expectedStringValue": null
+  },
+  {
+    "remainingFields": ["bio", "interests"],
+    "latestUserMessage": "آدم آرومی هستم، عاشق کتاب و کوهنوردی‌ام",
+    "expectedField": "bio",
+    "expectedStringValue": null
+  },
+  {
+    "remainingFields": ["interests"],
+    "latestUserMessage": "به موسیقی، آشپزی و سفر علاقه دارم",
+    "expectedField": "interests",
+    "expectedStringValue": null
+  },
+  {
+    "remainingFields": ["displayName", "city"],
+    "latestUserMessage": "هوا امروز خیلی خوبه",
+    "expectedField": null,
+    "expectedStringValue": null
+  },
+  {
+    "remainingFields": ["city"],
+    "latestUserMessage": "شیراز شهر قشنگیه",
+    "expectedField": "city",
+    "expectedStringValue": "شیراز"
+  },
+  {
+    "remainingFields": ["displayName"],
+    "latestUserMessage": "رضا صدام کن",
+    "expectedField": "displayName",
+    "expectedStringValue": "رضا"
+  }
+]

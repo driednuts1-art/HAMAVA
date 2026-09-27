@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.*.local
+*.log
+coverage/
+# Scoped with a leading slash on purpose — a real bug found while verifying
+# this project's first `git init`: the old unscoped "storage/" matched ANY
+# directory named "storage" anywhere under backend/, which silently included
+# the real S3StorageProvider source at src/modules/profile/storage/ in the
+# ignore list. This now only matches a top-level local runtime storage dir
+# (leftover from the pre-S3 LocalDiskStorageProvider era, already deleted —
+# docs/roadmap.md §3), which no longer exists on disk, kept only in case a
+# local cache dir with this name is ever recreated.
+/storage/

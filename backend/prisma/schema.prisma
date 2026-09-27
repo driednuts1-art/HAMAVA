@@ -1,0 +1,839 @@
+// Prisma schema for Hamava backend.
+// Entities are added incrementally, one owning feature at a time (docs/requirements.md):
+// Feature 1 (auth/liveness), Feature 2 (profile/photos), Feature 3 (discovery/swipes/matches),
+// Feature 4 (chat/Message, safety/Block+Report), plus AuditLog (product.md §9), which is
+// cross-cutting since Feature 1. Other entities (CallSession, DateShareLink) are added
+// when their owning feature ships.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector]
+}
+
+enum LivenessSessionStatus {
+  PENDING
+  PASS
+  FAIL
+}
+
+// Technical-minimum taxonomy only, needed to make gender-preference filtering
+// work at all — not a product decision (see docs/requirements.md Feature 3 §9).
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+// product.md §7.2 "Dating Intent field", also used as the discovery preference.
+enum RelationshipGoal {
+  SERIOUS
+  CASUAL
+  MARRIAGE_TRACK
+  FRIENDSHIP
+  NOT_SURE
+}
+
+// Feature 24 (docs/requirements.md): the six real "about me" tags — all
+// optional, all independently nullable, none required for profileCompletedAt.
+enum Education {
+  HIGH_SCHOOL
+  BACHELORS
+  MASTERS
+  DOCTORATE
+  TRADE_SCHOOL
+  OTHER
+}
+
+enum ExerciseHabit {
+  NEVER
+  SOMETIMES
+  REGULARLY
+  DAILY
+}
+
+// FR-438: "have kids" and "want kids" are real, distinct facts — not a
+// boolean standing in for both.
+enum KidsStatus {
+  HAVE_KIDS
+  WANT_KIDS
+  HAVE_AND_WANT_MORE
+  DONT_WANT_KIDS
+  NOT_SURE
+}
+
+enum ZodiacSign {
+  ARIES
+  TAURUS
+  GEMINI
+  CANCER
+  LEO
+  VIRGO
+  LIBRA
+  SCORPIO
+  SAGITTARIUS
+  CAPRICORN
+  AQUARIUS
+  PISCES
+}
+
+// Feature 24 §10 #3 (docs/requirements.md): a deliberate, explicit user
+// decision — three neutral values, not a Western left/right axis, chosen
+// specifically to avoid a divisive frame for a Persian-diaspora audience.
+enum PoliticalView {
+  NOT_INTERESTED
+  INTERESTED
+  PREFER_NOT_TO_SAY
+}
+
+enum DrinkingHabit {
+  NEVER
+  SOMETIMES
+  REGULARLY
+}
+
+enum SmokingHabit {
+  NEVER
+  SOMETIMES
+  REGULARLY
+}
+
+enum SwipeAction {
+  LIKE
+  PASS
+  SUPER_LIKE
+}
+
+enum MatchSource {
+  SWIPE
+  SUPER_LIKE
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+}
+
+// Feature 5: fixed risk taxonomy, replacing free-text-only reports (FR-72).
+enum ReportReasonCategory {
+  SPAM
+  FAKE_PROFILE
+  HARASSMENT
+  SCAM_OR_FINANCIAL
+  OTHER
+}
+
+// Feature 5 (FR-76): minimal RBAC for the admin report-review surface.
+// No self-service promotion path — granting ADMIN is a manual DB update
+// (docs/requirements.md Feature 5 Open Items #3).
+enum UserRole {
+  USER
+  ADMIN
+}
+
+// Feature 6 (FR-78): "who can message me" — product.md §7.4, default VERIFIED_ONLY.
+enum MessagingPermission {
+  EVERYONE
+  VERIFIED_ONLY
+}
+
+// Feature 8 (FR-97): which of the three moderated surfaces a flag came from.
+enum ModerationContentType {
+  BIO_TEXT
+  PHOTO
+  MESSAGE
+}
+
+enum ModerationFlagStatus {
+  PENDING_REVIEW
+  RESOLVED
+}
+
+// Feature 8 (FR-99): an admin's verdict on the vendor's original rejection.
+enum ModerationFlagResolution {
+  UPHELD
+  OVERTURNED
+}
+
+// Feature 21 (FR-286): which real entry path produced a profile field's
+// current value. Deliberately only two values, not the full five-value set
+// the original audit sketched — AI_INFERRED/SYSTEM_VERIFIED/EXTERNAL_VERIFIED
+// have no real call site in this codebase today (nothing is ever persisted
+// pre-confirmation, and no system/external-verified field exists), so they
+// are not added speculatively (docs/requirements.md Feature 21 §7).
+enum AttributeSource {
+  USER_ENTERED
+  USER_CONFIRMED
+}
+
+// Feature 21 (FR-293): explicit, optional match-relevance feedback.
+enum MatchFeedbackRating {
+  VERY_RELEVANT
+  RELEVANT
+  NEUTRAL
+  NOT_RELEVANT
+  WRONG_MATCH
+}
+
+enum MatchFeedbackReason {
+  LOCATION
+  AGE
+  GOAL
+  LANGUAGE
+  PROFESSION
+  INTEREST
+  NOT_INTERESTED
+  OTHER
+}
+
+model User {
+  id                 String    @id @default(uuid())
+  // HMAC hash of the E.164 phone number. Plaintext phone is never persisted (product.md §5, §9).
+  phoneHash          String    @unique
+  livenessStatus     Boolean   @default(false)
+  livenessVerifiedAt DateTime?
+  createdAt          DateTime  @default(now())
+
+  // Feature 2 (docs/requirements.md): basic profile fields (product.md §9 "profile").
+  displayName        String?
+  birthDate          DateTime?
+  city               String?
+  bio                String?
+  interests          String[]  @default([])
+  profileCompletedAt DateTime?
+  // Feature 29 (FR-502): default false for genuinely new/incomplete
+  // profiles; backfilled to true in this same migration for every row that
+  // already has a non-null profileCompletedAt, so no existing user is
+  // shown a retroactive "welcome" tour.
+  hasSeenWelcomeTour Boolean   @default(false)
+
+  // Feature 24: real profile depth — every field here is optional, none
+  // required for profileCompletedAt except promptAnswers (FR-435, a real,
+  // deliberate exception — see profile.service.ts).
+  // FR-432: an array of {promptId, answer}, not fixed columns, so the fixed
+  // prompt list (prompts.constants.ts) can grow without a migration.
+  promptAnswers Json?
+
+  // FR-438: six independently-optional "about me" tags, all icon-labeled on
+  // the real card (CandidateCard), none required.
+  height        Int? // cm
+  education     Education?
+  exerciseHabit ExerciseHabit?
+  hasKids       KidsStatus?
+  zodiacSign    ZodiacSign?
+  politicalView PoliticalView?
+
+  // FR-444: a second, independent location field alongside `city` (which the
+  // UI now explicitly labels "current city") — important for a diaspora
+  // audience, per the user's own explicit framing.
+  hometown String?
+
+  // FR-447: mirrors `interests`'s own array-column shape exactly.
+  languages String[] @default([])
+
+  // FR-450: drinking/smoking are both real, optional facts, hideable as one
+  // category (not two independent toggles) via hideDrinkingSmoking.
+  drinking            DrinkingHabit?
+  smoking             SmokingHabit?
+  hideDrinkingSmoking Boolean        @default(false)
+
+  // FR-463: drives the real "new likes since last open" badge count — a
+  // real, minimal timestamp, no fabricated read-receipt semantics beyond it.
+  whoLikedMeSeenAt DateTime?
+
+  // Feature 3: needed to make discovery filtering possible at all (FR-46).
+  gender       Gender?
+  datingIntent RelationshipGoal?
+  // Stamped on OTP verify (FR-49) — the only activity signal that exists so far.
+  lastActiveAt DateTime?
+
+  // Feature 27 (FR-482): stamped by PresenceService the moment a user's
+  // *last* live WebSocket connection closes — a distinct concept from
+  // lastActiveAt above (login-only, FR-49's weekly deck filter). Never
+  // conflate the two.
+  lastOnlineAt DateTime?
+  // Feature 27 (FR-484): symmetric privacy toggle (WhatsApp precedent) —
+  // off hides this user's own presence from others AND hides everyone
+  // else's presence from this user, enforced once in PresenceService.
+  showLastActiveStatus Boolean @default(true)
+
+  // Feature 9 (FR-112): precomputed on bio/interests write. Unsupported because
+  // Prisma Client has no native vector type — read/written only via
+  // $queryRaw/$executeRaw (see ai-search.service.ts). Null is a valid, expected,
+  // non-excluding state (NULLS LAST ranking, FR-112/FR-113), not an error state.
+  bioEmbedding Unsupported("vector(1536)")?
+
+  // Feature 5 (FR-76): USER by default; ADMIN gates the report-review endpoints.
+  role UserRole @default(USER)
+
+  // Feature 6 (FR-78): privacy-by-default — both already the secure option
+  // for existing rows too, since these are column defaults, not app fallbacks.
+  preciseLocationEnabled Boolean             @default(false)
+  messagingPermission    MessagingPermission @default(VERIFIED_ONLY)
+  // Feature 6 (FR-81): persisted only — no delivery mechanism exists yet.
+  notifyOnNewMatch       Boolean             @default(true)
+  notifyOnNewMessage     Boolean             @default(true)
+  notifyOnSafetyAlert    Boolean             @default(true)
+
+  // Feature 12 (FR-171): default true — off by default would silently
+  // defeat Share My Date's own safety purpose for most users; a real,
+  // visible opt-out (surfaced via Feature 6's settings) is the correct
+  // default-safe-but-not-default-silent posture here.
+  allowInSafetyShares Boolean @default(true)
+
+  sessions                    Session[]
+  consentRecords              ConsentRecord[]
+  livenessSessions            LivenessSession[]
+  photos                      Photo[]
+  discoveryPreferences        DiscoveryPreferences?
+  swipesMade                  Swipe[]                      @relation("SwipeActor")
+  swipesReceived              Swipe[]                      @relation("SwipeTarget")
+  matchesAsUserA              Match[]                      @relation("MatchUserA")
+  matchesAsUserB              Match[]                      @relation("MatchUserB")
+  messagesSent                Message[]
+  blocksMade                  Block[]                      @relation("BlockerUser")
+  blocksReceived              Block[]                      @relation("BlockedUser")
+  reportsMade                 Report[]                     @relation("ReporterUser")
+  reportsReceived             Report[]                     @relation("ReportedUser")
+  reportsResolved             Report[]                     @relation("ResolvedByAdmin")
+  moderationFlags             ModerationFlag[]             @relation("FlaggedUser")
+  moderationFlagsResolved     ModerationFlag[]             @relation("ModerationFlagResolvedByAdmin")
+  aiSearchRequests            AiSearchRequest[]
+  boosts                      Boost[]
+  analyticsEvents             AnalyticsEvent[]
+  conversationalSetupRequests ConversationalSetupRequest[]
+  dateShareLinks              DateShareLink[]
+  callSessionsInitiated       CallSession[]
+
+  // Feature 21.
+  attributeProvenance ProfileAttributeProvenance[]
+  matchFeedback       MatchFeedback[]
+  aiUsageEvents       AiUsageEvent[]
+
+  // FR-36: supports the deck's ORDER BY + keyset-cursor pagination directly.
+  @@index([createdAt, id])
+  // 2026-09-21: replaces the old standalone @@index([livenessStatus]) —
+  // livenessStatus as the leftmost column serves every query that filtered
+  // on it alone (FR-47/FR-48's verifiedOnly), while also covering
+  // DeckService.getDeck() and AiSearchService.search()'s shared
+  // candidate-generation query (gender/datingIntent/birthDate), which had no
+  // supporting index at all until now — see
+  // docs/ai-search-ranking-scaling-analysis.md §3 for the full rationale.
+  // Column order: equality predicates (livenessStatus, gender, datingIntent)
+  // before the range predicate (birthDate), standard composite-index practice.
+  @@index([livenessStatus, gender, datingIntent, birthDate])
+  @@map("users")
+}
+
+model DiscoveryPreferences {
+  userId               String             @id
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  minAge               Int                @default(18)
+  maxAge               Int                @default(100)
+  genderPref           Gender[]           @default([])
+  relationshipGoalPref RelationshipGoal[] @default([])
+  // FR-47: defaults to true — "verified-only as the default discovery filter, not an opt-in" (product.md §4).
+  verifiedOnly         Boolean            @default(true)
+  activeThisWeekOnly   Boolean            @default(false)
+  // Feature 27 (FR-489): structural copy of activeThisWeekOnly above —
+  // same deck.service.ts where-builder, same buildSafetyExclusionWhere floor.
+  newMembersOnly       Boolean            @default(false)
+  updatedAt            DateTime           @updatedAt
+
+  @@map("discovery_preferences")
+}
+
+// FR-38, FR-40: one row per (actor, target) swipe, permanent — re-swiping the
+// same target is rejected, not overwritten.
+model Swipe {
+  id        String      @id @default(uuid())
+  actorId   String
+  actor     User        @relation("SwipeActor", fields: [actorId], references: [id], onDelete: Cascade)
+  targetId  String
+  target    User        @relation("SwipeTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  action    SwipeAction
+  createdAt DateTime    @default(now())
+
+  // Feature 10 (FR-124), restructured by Feature 21 (FR-302): generated for
+  // SUPER_LIKE only (never invented for LIKE/PASS, never blocking the swipe
+  // on generation failure — fail-open, FR-121). Same structured
+  // reasons/mismatches shape as Match, for the same reason — see Match's
+  // own fields below.
+  explanationReasons    String[] @default([])
+  explanationMismatches String[] @default([])
+
+  @@unique([actorId, targetId])
+  @@index([actorId, createdAt])
+  // FR-431 (Feature 24, docs/requirements.md §2): the real gap the "Who
+  // Liked Me" investigation found — neither existing index has targetId as
+  // its leading column, so WHERE targetId = me (what that tab's own query
+  // needs) forced a full sequential scan. Purely additive.
+  @@index([targetId, action, createdAt])
+  @@map("swipes")
+}
+
+// FR-42: userAId/userBId are canonically ordered (lower id first) at the
+// application layer so a mutual like can never produce two rows for the same pair.
+model Match {
+  id        String      @id @default(uuid())
+  userAId   String
+  userA     User        @relation("MatchUserA", fields: [userAId], references: [id], onDelete: Cascade)
+  userBId   String
+  userB     User        @relation("MatchUserB", fields: [userBId], references: [id], onDelete: Cascade)
+  source    MatchSource
+  createdAt DateTime    @default(now())
+  messages  Message[]
+
+  // Feature 21 (FR-302..FR-306): replaces the old single `whyYouTwo: String?`
+  // — grounding-checked, structured positive/negative explanation, lazily
+  // generated on first GET /v1/discovery/matches read for a regular match, or
+  // generated at creation time for a SUPER_LIKE match. `explanationGeneratedAt`
+  // null means "not yet attempted" — the new "don't regenerate" check,
+  // replacing the old `whyYouTwo !== null` test. Empty arrays are a real,
+  // legitimate outcome (a strongly-aligned pair can have zero mismatches;
+  // a grounding rejection discards the whole result, not a partial one),
+  // never treated as "not generated yet."
+  matchReasons           String[]  @default([])
+  matchMismatches        String[]  @default([])
+  explanationGeneratedAt DateTime?
+
+  dateShareLinks DateShareLink[]
+  callSessions   CallSession[]
+  feedback       MatchFeedback[]
+
+  @@unique([userAId, userBId])
+  @@index([userAId])
+  @@index([userBId])
+  @@map("matches")
+}
+
+// Feature 9 (FR-115): TEXT/VOICE mode, purely for the rolling-window
+// rate-limit count query — mirrors Swipe's dual role (record + rate-limit source).
+enum AiSearchMode {
+  TEXT
+  VOICE
+}
+
+model AiSearchRequest {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mode      AiSearchMode
+  createdAt DateTime     @default(now())
+
+  // FR-115: rate-limit window count query is per (userId, mode) since text and
+  // voice have independent limits — mirrors Swipe's (actorId, createdAt) shape.
+  @@index([userId, mode, createdAt])
+  @@map("ai_search_requests")
+}
+
+// Feature 10 (FR-126): one row per activation. "Currently active" is
+// evaluated as endsAt > now at query time, not a separate boolean — avoids a
+// stale flag ever disagreeing with the actual time-boxed window.
+model Boost {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startsAt  DateTime @default(now())
+  endsAt    DateTime
+  createdAt DateTime @default(now())
+
+  // FR-126/FR-128: "is there an active boost" lookups.
+  @@index([userId, endsAt])
+  // FR-130: rate-limit window count query, mirrors Swipe's (actorId, createdAt).
+  @@index([userId, createdAt])
+  @@map("boosts")
+}
+
+// Feature 11 (FR-150/151): backs the one real analytics event this project
+// instruments so far (`profile_completed`, FR-152) — a `MockAnalyticsEventProvider`
+// writes here rather than only logging, since the point of this table is to let
+// a real product decision be answered by querying real data. `event` is a
+// plain String, not an enum, because `AnalyticsEventProviderInterface` is
+// generic even though only one event is wired up today (product.md §11's
+// full taxonomy stays deferred). `properties` never carries actual profile
+// field values (FR-153) — only structural/behavioral metadata.
+model AnalyticsEvent {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event      String
+  properties Json
+  createdAt  DateTime @default(now())
+
+  @@index([userId, event])
+  // FR-152's actual purpose: a source breakdown of profile_completed over time.
+  @@index([event, createdAt])
+  @@map("analytics_events")
+}
+
+// Feature 11 (FR-148): purely a rolling-window rate-limit counter — mirrors
+// AiSearchRequest's exact dual role (record + count query). Never holds any
+// conversation content (FR-143) — just enough to count requests per user.
+enum ConversationalSetupRequestKind {
+  SESSION_START
+  TEXT_TURN
+  VOICE_TURN
+}
+
+model ConversationalSetupRequest {
+  id        String                         @id @default(uuid())
+  userId    String
+  user      User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      ConversationalSetupRequestKind
+  createdAt DateTime                       @default(now())
+
+  @@index([userId, kind, createdAt])
+  @@map("conversational_setup_requests")
+}
+
+// FR-53: every message belongs to a match, so match-gating is enforced by
+// construction — a message can't exist without a match reference to check.
+model Message {
+  id                   String    @id @default(uuid())
+  matchId              String
+  match                Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  senderId             String
+  sender               User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content              String
+  sentAt               DateTime  @default(now())
+  readAt               DateTime?
+  clientIdempotencyKey String
+
+  // FR-54: a retried send (same sender, same match, same key) returns the
+  // existing row instead of creating a duplicate.
+  @@unique([matchId, senderId, clientIdempotencyKey])
+  // FR-62: cursor pagination of history, newest-first.
+  @@index([matchId, sentAt, id])
+  @@map("messages")
+}
+
+// FR-55, FR-64: checked bidirectionally — either party having blocked the
+// other prevents sending, in both directions.
+model Block {
+  id        String   @id @default(uuid())
+  blockerId String
+  blocker   User     @relation("BlockerUser", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User     @relation("BlockedUser", fields: [blockedId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("blocks")
+}
+
+// FR-65 (Feature 4): create-path primitive. Feature 5 adds categorization
+// (FR-72) and the resolve path (FR-75).
+model Report {
+  id         String               @id @default(uuid())
+  reporterId String
+  reporter   User                 @relation("ReporterUser", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedId String
+  reported   User                 @relation("ReportedUser", fields: [reportedId], references: [id], onDelete: Cascade)
+  category   ReportReasonCategory
+  // Free-text detail. Optional except when category=OTHER (enforced at the
+  // DTO/service layer, not the DB — FR-72). Was required free text pre-Feature 5.
+  reason     String?
+  // A matchId or messageId, depending on what the reporter was reporting from — not a hard FK (target may later be deleted).
+  contextRef String?
+  status     ReportStatus         @default(OPEN)
+  createdAt  DateTime             @default(now())
+
+  // FR-75: set when an admin resolves the report.
+  resolvedAt        DateTime?
+  resolvedByAdminId String?
+  resolvedByAdmin   User?     @relation("ResolvedByAdmin", fields: [resolvedByAdminId], references: [id], onDelete: SetNull)
+  resolutionNote    String?
+
+  @@index([reportedId, createdAt])
+  @@index([status, createdAt]) // FR-74: admin queue list, filterable by status
+  @@index([reporterId, createdAt]) // report-abuse rate limit's rolling-window count query
+  @@map("reports")
+}
+
+// Feature 8 (FR-97): created on every moderation rejection, retaining the
+// actual content — otherwise there is nothing for a human review queue to
+// show (rejected content is never persisted anywhere else). See
+// docs/requirements.md Feature 8 Open Items #2 for the retention tradeoff.
+model ModerationFlag {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation("FlaggedUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  contentType          ModerationContentType
+  // The rejected text itself, for BIO_TEXT/MESSAGE — never persisted anywhere
+  // else, so this is the only copy a reviewer could ever see.
+  textContent          String?
+  // Opaque STORAGE_PROVIDER key for a flagged PHOTO's already-re-encoded,
+  // already-malware-scanned bytes, quarantined under their own prefix —
+  // never the same key a published Photo would use.
+  quarantineStorageKey String?
+  // The vendor's stated reason (ModerationResult.reason).
+  reason               String?
+  // A matchId, for a rejected MESSAGE — not a hard FK, same as Report.contextRef.
+  contextRef           String?
+
+  status ModerationFlagStatus @default(PENDING_REVIEW)
+
+  // Set together on resolve (FR-99).
+  resolution        ModerationFlagResolution?
+  resolutionNote    String?
+  resolvedAt        DateTime?
+  resolvedByAdminId String?
+  resolvedByAdmin   User?                     @relation("ModerationFlagResolvedByAdmin", fields: [resolvedByAdminId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([status, createdAt]) // FR-98: admin queue list, filterable by status
+  @@map("moderation_flags")
+}
+
+model Photo {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Opaque reference into the storage provider (local path today, object key with a real vendor later).
+  storageKey String
+  // Display order; lowest = primary photo.
+  position   Int
+  createdAt  DateTime @default(now())
+
+  @@index([userId, position])
+  @@map("photos")
+}
+
+// OTP requests are keyed by phoneHash, not userId, because the user may not
+// exist yet at request time (first-time signup).
+model OtpRequest {
+  id           String    @id @default(uuid())
+  phoneHash    String
+  // Requesting IP, kept only for abuse-rate-limit counting (FR-4), not for profiling.
+  ip           String
+  codeHash     String
+  expiresAt    DateTime
+  attemptCount Int       @default(0)
+  consumedAt   DateTime?
+  createdAt    DateTime  @default(now())
+
+  // Supports both the "current pending OTP for this phone" lookup and the
+  // per-phone rate-limit window count query (FR-4).
+  @@index([phoneHash, createdAt])
+  // Supports the per-IP rate-limit window count query (FR-4).
+  @@index([ip, createdAt])
+  @@map("otp_requests")
+}
+
+model Session {
+  id               String    @id @default(uuid())
+  userId           String
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refreshTokenHash String    @unique
+  deviceInfo       String?
+  createdAt        DateTime  @default(now())
+  lastUsedAt       DateTime  @default(now())
+  revokedAt        DateTime?
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model ConsentRecord {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policyVersion String
+  acceptedAt    DateTime @default(now())
+
+  @@index([userId, policyVersion])
+  @@map("consent_records")
+}
+
+model LivenessSession {
+  id                 String                @id @default(uuid())
+  userId             String
+  user               User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider           String
+  providerSessionRef String?
+  status             LivenessSessionStatus @default(PENDING)
+  createdAt          DateTime              @default(now())
+  resolvedAt         DateTime?
+
+  @@index([userId])
+  @@map("liveness_sessions")
+}
+
+// Append-only trust/security event trail (product.md §9): "required for
+// accountability and later compliance reporting". Deliberately NOT a foreign
+// key to User — audit history must survive account deletion for compliance
+// purposes, so it must not cascade-delete with the user row.
+model AuditLog {
+  id        String   @id @default(uuid())
+  // User id for authenticated events; a phoneHash for pre-auth events (e.g. a
+  // failed OTP attempt before any user record exists). Never a plaintext phone.
+  actorId   String?
+  action    String
+  targetRef String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([actorId, createdAt])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
+
+// Feature 12 (FR-158/FR-159): the raw token is never persisted — only its
+// HMAC hash (CryptoService.hashShareToken(), its own dedicated secret),
+// mirroring Session.refreshTokenHash's exact "high-entropy bearer secret,
+// hash-only, exact-match lookup" shape.
+model DateShareLink {
+  id           String    @id @default(uuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  matchId      String
+  match        Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  datetime     DateTime
+  locationText String
+  tokenHash    String    @unique
+  // FR-157: anchored to `datetime` (a future business event), not to
+  // createdAt — the first TTL in this codebase that isn't counted forward
+  // from "now". A fixed "N hours from creation" TTL would be actively wrong
+  // here: a date planned three days out could expire before it even happens.
+  expiresAt    DateTime
+  // FR-161: set, never a hard delete — history stays visible via FR-160's list.
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  // FR-168: creation rate-limit window count query, mirrors Boost's
+  // (userId, createdAt) shape.
+  @@index([userId, createdAt])
+  @@map("date_share_links")
+}
+
+// Feature 12 (FR-169): a rolling-window counter only — never conversation-
+// or link-content, just enough to rate-limit the public lookup endpoint per
+// IP, mirroring OtpRequest's existing per-IP axis (FR-4).
+model DateShareLinkLookupAttempt {
+  id        String   @id @default(uuid())
+  ip        String
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
+  @@map("date_share_link_lookup_attempts")
+}
+
+// Feature 13.
+enum CallType {
+  VOICE
+  VIDEO
+}
+
+enum CallSessionStatus {
+  RINGING
+  ACTIVE
+  ENDED
+}
+
+enum CallEndReason {
+  COMPLETED
+  DECLINED
+  MISSED
+  DURATION_LIMIT_REACHED
+}
+
+// FR-193/FR-194: metadata only — no audio/video frame or media stream is
+// ever received by this backend, so there is nothing content-shaped this
+// table could even hold. connectionType/qualityStatsRef are client-reported
+// and never independently verified (FR-180) — informational/debugging only.
+model CallSession {
+  id          String            @id @default(uuid())
+  matchId     String
+  match       Match             @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  initiatorId String
+  initiator   User              @relation(fields: [initiatorId], references: [id], onDelete: Cascade)
+  type        CallType
+  status      CallSessionStatus @default(RINGING)
+
+  // FR-190: set only for a match's first-ever CallSession; null (uncapped) for every later one.
+  durationLimitSeconds Int?
+
+  createdAt DateTime  @default(now()) // FR-178: the start call
+  startedAt DateTime? // FR-179: join (RINGING -> ACTIVE)
+  endedAt   DateTime?
+
+  endReason       CallEndReason?
+  connectionType  String? // client-reported only, never verified
+  qualityStatsRef String? // client-reported only, opaque reference
+
+  // FR-190: "is this the first CallSession for this match" check.
+  @@index([matchId, createdAt])
+  // FR-196: call-start rate-limit window.
+  @@index([initiatorId, createdAt])
+  @@map("call_sessions")
+}
+
+// Feature 21 (FR-286..FR-289): latest-known provenance per (user, field) —
+// not a full history. Never holds a value itself, only metadata about the
+// real User column's current value, so this table has nothing to leak that
+// the User row doesn't already legitimately expose to its own owner.
+model ProfileAttributeProvenance {
+  id          String          @id @default(uuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  field       String
+  source      AttributeSource
+  // Only ever set for USER_CONFIRMED (an AI proposal the user confirmed) —
+  // null for USER_ENTERED, since there is no AI confidence to have about a
+  // value the user typed directly (FR-286).
+  confidence  Float?
+  confirmedAt DateTime        @default(now())
+
+  @@unique([userId, field])
+  @@map("profile_attribute_provenance")
+}
+
+// Feature 21 (FR-293..FR-295): optional, explicit match-relevance feedback —
+// never required, never blocks any other flow.
+model MatchFeedback {
+  id         String               @id @default(uuid())
+  matchId    String
+  match      Match                @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating     MatchFeedbackRating
+  reasonCode MatchFeedbackReason?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @updatedAt
+
+  // FR-293: a participant may change their mind — upsert, not append-only.
+  @@unique([matchId, userId])
+  @@map("match_feedback")
+}
+
+// Feature 21 (FR-298..FR-299): operational AI cost/usage metadata only —
+// never prompt/completion content. userId is SetNull (not Cascade) on user
+// deletion: real cost/latency data reasonably outlives the user it was
+// attributed to for aggregate reporting purposes, unlike the two models
+// above which are genuinely user-owned data.
+model AiUsageEvent {
+  id               String   @id @default(uuid())
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  provider         String
+  model            String
+  feature          String
+  success          Boolean
+  latencyMs        Int
+  promptTokens     Int?
+  completionTokens Int?
+  estimatedCostUsd Float?
+  createdAt        DateTime @default(now())
+
+  @@index([feature, createdAt])
+  @@index([provider, model, createdAt])
+  @@map("ai_usage_events")
+}

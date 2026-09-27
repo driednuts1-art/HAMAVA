@@ -1,0 +1,10 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "hamava-frontend",
+      "port": 3001,
+      "url": "http://localhost:3001"
+    }
+  ]
+}

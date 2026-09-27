@@ -1,0 +1,95 @@
+name: CI
+
+# Real gap closed (2026-09-18 audit): this project had no CI/CD pipeline of
+# any kind, and wasn't even a git repository — meaning nothing has ever
+# automatically gated a broken build/typecheck/test from being "shipped"
+# (in practice: from a developer treating local, manual runs as sufficient).
+# This file is inert until the repo is pushed to a GitHub remote — it does
+# not itself change how the project is deployed (no deployment mechanism
+# exists yet either, see docs/roadmap.md's Production Readiness Checklist).
+#
+# Deliberately scoped to what's safe to run with ZERO secrets configured:
+# lint, typecheck, and the unit-test suites (both fully mocked — no real
+# Postgres/Redis/OpenAI/S3 dependency). The real e2e suites (backend
+# test/*.e2e-spec.ts, frontend playwright) need real infrastructure
+# credentials (Neon, Upstash, OpenAI, S3-compatible storage, Cloudflare
+# TURN) — wiring those into CI is a real, separate decision (which
+# credentials, which environment, cost implications of e2e tests calling
+# real OpenAI on every push) that needs an explicit choice, not something
+# to configure unilaterally. Tracked as a deliberate follow-up, not an
+# oversight — see the comment block at the bottom of this file.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend — lint, typecheck, unit tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint -- --max-warnings=0
+      - run: npm test -- --colors=false
+
+  frontend:
+    name: Frontend — lint, typecheck, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      # A real build with no NEXT_PUBLIC_* secrets set will fail if any
+      # server/client code hard-requires one at build time — this is a real,
+      # useful smoke test even without deploying the output anywhere.
+      - run: npm run build
+
+  dependency-audit:
+    name: Dependency vulnerability audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Backend audit (fails on new high/critical)
+        working-directory: backend
+        run: npm audit --omit=dev --audit-level=high
+      - name: Frontend audit (fails on new high/critical)
+        working-directory: frontend
+        run: npm audit --omit=dev --audit-level=high
+
+# Follow-up, not done here (needs an explicit decision, not a default):
+# - Real e2e suites (backend Jest e2e + frontend Playwright) need real
+#   Neon/Upstash/OpenAI/S3-compatible/Cloudflare-TURN credentials as GitHub
+#   Actions secrets, plus a decision on whether e2e should run on every push
+#   (real $ cost per OpenAI-touching test) or only on a schedule/manual
+#   trigger.
+# - A real secrets manager (docs/roadmap.md "Production Readiness
+#   Checklist") should exist before any of the above secrets are added here
+#   — putting real production-adjacent credentials into repository secrets
+#   without that in place first would just move the "plain .env" problem
+#   into a different plain-text store.
+# - No deployment step exists here on purpose — there is no production
+#   infrastructure to deploy to yet (see the audit's §19).

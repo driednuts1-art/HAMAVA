@@ -1,0 +1,32 @@
+[
+  {
+    "text": "یه نفر جدی، اهل کتاب، تو تهران",
+    "expectedCity": "تهران",
+    "expectedRelationshipGoal": ["SERIOUS"]
+  },
+  {
+    "text": "دنبال یه دختر بین ۲۵ تا ۳۰ سال برای دوستی می‌گردم",
+    "expectedGender": ["FEMALE"],
+    "expectedMinAge": 25,
+    "expectedMaxAge": 30,
+    "expectedRelationshipGoal": ["FRIENDSHIP"]
+  },
+  {
+    "text": "یه آقای اهل شیراز که به کوهنوردی علاقه داره",
+    "expectedCity": "شیراز",
+    "expectedGender": ["MALE"]
+  },
+  {
+    "text": "می‌خوام یکی رو پیدا کنم که تو مسیر ازدواج باشه",
+    "expectedRelationshipGoal": ["MARRIAGE_TRACK"]
+  },
+  {
+    "text": "کسی که عاشق موسیقی و سفره، فرقی نمی‌کنه کجا زندگی کنه",
+    "expectedCity": null
+  },
+  {
+    "text": "یه نفر بالای ۳۵ سال برای رابطه‌ی جدی",
+    "expectedMinAge": 35,
+    "expectedRelationshipGoal": ["SERIOUS"]
+  }
+]
